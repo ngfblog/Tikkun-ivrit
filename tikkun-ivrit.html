@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>תיקון עברית</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f0f0;
+    --muted: #888;
+    --accent: #7c6ef7;
+    --accent2: #5ee6b0;
+    --accent-dim: rgba(124,110,247,0.15);
+    --radius: 12px;
+  }
+  [data-theme="light"] {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #eeece8;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1a1a;
+    --muted: #777;
+    --accent: #5b4ee0;
+    --accent2: #1a9e72;
+    --accent-dim: rgba(91,78,224,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+    transition: background 0.3s, color 0.3s;
+  }
+  header {
+    padding: 24px 32px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .theme-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+  }
+  .theme-btn:hover { color: var(--text); border-color: var(--accent); }
+  nav {
+    display: flex;
+    gap: 0;
+    margin-top: 16px;
+  }
+  .tab {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 500;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+  main { padding: 32px; max-width: 820px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .panel-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 20px;
+    letter-spacing: 0.3px;
+  }
+  .toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .toggle {
+    font-size: 12px;
+    font-family: 'Heebo', sans-serif;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .toggle.on {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  textarea {
+    width: 100%;
+    min-height: 150px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    padding: 14px 16px;
+    direction: rtl;
+    text-align: right;
+    resize: vertical;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+  .row {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+    align-items: center;
+  }
+  .label-sm {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .btn {
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn.primary:hover { opacity: 0.88; }
+  .btn.success {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #0f1a14;
+  }
+  .status-bar {
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 20px;
+    margin-top: 6px;
+    transition: color 0.2s;
+  }
+  .status-bar.ok { color: var(--accent2); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .diff-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 2;
+    display: none;
+  }
+  .diff-box.show { display: block; }
+  .diff-item::before { content: '✓ '; color: var(--accent2); }
+  .info-box {
+    background: var(--accent-dim);
+    border: 1px solid rgba(124,110,247,0.3);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+    margin-bottom: 20px;
+  }
+  .info-box strong { color: var(--text); }
+  @media (max-width: 600px) {
+    header { padding: 16px 16px 0; }
+    main { padding: 20px 16px; }
+    .tab { padding: 10px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">תיקון <span>עברית</span></div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀ מצב בהיר</button>
+</header>
+<nav>
+  <button class="tab active" onclick="switchTab('rtl', this)">תיקון RTL ל-Word</button>
+  <button class="tab" onclick="switchTab('keyboard', this)">תיקון מקלדת אנגלית←עברית</button>
+</nav>
+
+<main>
+
+<!-- TAB 1: RTL Fixer -->
+<div class="panel active" id="panel-rtl">
+  <p class="panel-title">מדביקים טקסט מ-ChatGPT או מהאינטרנט — הכלי מתקן כיווניות RTL, מרכאות, סוגריים ורווחים לפני הדבקה ב-Word</p>
+
+  <div class="toggles" id="toggles">
+    <span class="toggle on" data-key="quotes">מרכאות עבריות ״ ״</span>
+    <span class="toggle on" data-key="rtlmark">סימן כיוון RTL</span>
+    <span class="toggle on" data-key="numberspaces">רווחים ליד מספרים</span>
+    <span class="toggle on" data-key="parens">סוגריים ( )</span>
+    <span class="toggle on" data-key="cleaninvisible">ניקוי תווים נסתרים</span>
+    <span class="toggle off" data-key="removebidi">הסר כל תווי bidi</span>
+  </div>
+
+  <span class="label-sm">הדבק כאן את הטקסט שהועתק</span>
+  <textarea id="rtl-input" placeholder="הדבק טקסט עברי כאן..."></textarea>
+
+  <div class="row">
+    <button class="btn primary" onclick="fixRTL()">תקן טקסט ←</button>
+    <button class="btn" onclick="showDiff()">הצג שינויים</button>
+    <button class="btn" onclick="clearRTL()">נקה</button>
+  </div>
+
+  <div class="diff-box" id="diff-box"></div>
+  <hr class="divider"/>
+
+  <span class="label-sm">טקסט מתוקן — העתק מכאן ל-Word</span>
+  <textarea id="rtl-output" readonly placeholder="הטקסט המתוקן יופיע כאן..."></textarea>
+  <div class="row">
+    <button class="btn success" onclick="copyRTL()">העתק ללוח</button>
+  </div>
+  <div class="status-bar" id="rtl-status"></div>
+</div>
+
+<!-- TAB 2: Keyboard Fixer -->
+<div class="panel" id="panel-keyboard">
+  <div class="info-box">
+    <strong>מה זה עושה?</strong> אם הקלדת בטעות <strong>akuo</strong> כשהתכוונת <strong>שלום</strong> (פריסת מקלדת אנגלית במקום עברית) — הכלי הזה מתרגם אוטומטית.<br/>
+    מבוסס על <strong>Gutte</strong> מאת ngfblog.
+  </div>
+
+  <span class="label-sm">הדבק כאן טקסט שנכתב בטעות באנגלית</span>
+  <textarea id="kb-input" placeholder="לדוגמה: akuo יצא akuo..."></textarea>
+
+  <div class="row">
+    <button class="btn primary" onclick="convertKeyboard()">המר לעברית ←</button>
+    <button class="btn" onclick="clearKB()">נקה</button>
+  </div>
+  <hr class="divider"/>
+
+  <span class="label-sm">תוצאה</span>
+  <textarea id="kb-output" readonly placeholder="התוצאה תופיע כאן..."></textarea>
+  <div class="row">
+    <button class="btn success" onclick="copyKB()">העתק ללוח</button>
+  </div>
+  <div class="status-bar" id="kb-status"></div>
+</div>
+
+</main>
+
+<script>
+const RLM = '\u200F';
+const fixes = { quotes: true, rtlmark: true, numberspaces: true, parens: true, cleaninvisible: true, removebidi: false };
+let lastChanges = [];
+
+document.querySelectorAll('.toggle').forEach(el => {
+  el.addEventListener('click', () => {
+    const k = el.dataset.key;
+    fixes[k] = !fixes[k];
+    el.classList.toggle('on', fixes[k]);
+    el.classList.toggle('off', !fixes[k]);
+  });
+});
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? '' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀ מצב בהיר' : '🌙 מצב כהה';
+}
+
+function setStatus(id, msg, ok) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status-bar' + (ok ? ' ok' : '');
+}
+
+function fixRTL() {
+  const inp = document.getElementById('rtl-input').value;
+  if (!inp.trim()) { setStatus('rtl-status', 'הדבק טקסט תחילה', false); return; }
+  let out = inp;
+  lastChanges = [];
+
+  if (fixes.cleaninvisible) {
+    const b = out;
+    out = out.replace(/[\uFEFF\u00AD]/g, '');
+    if (out !== b) lastChanges.push('הוסרו תווים בלתי נראים (BOM, soft-hyphen)');
+  }
+  if (fixes.removebidi) {
+    const b = out;
+    out = out.replace(/[\u200E\u200F\u200C\u200D\u202A-\u202E\u2066-\u2069]/g, '');
+    if (out !== b) lastChanges.push('הוסרו כל תווי bidi control');
+  }
+  if (fixes.quotes) {
+    const b = out;
+    out = out.replace(/"([^"\n]{1,80})"/g, (m, inner) => /[א-ת]/.test(inner) ? '״' + inner + '״' : m);
+    out = out.replace(/(?<=[א-ת])"(?=[א-ת\s,.])/g, '״');
+    if (out !== b) lastChanges.push('מרכאות תוקנו למרכאות עבריות ״ ״');
+  }
+  if (fixes.numberspaces) {
+    const b = out;
+    out = out.replace(/([א-ת])(\d)/g, '$1\u00A0$2').replace(/(\d)([א-ת])/g, '$1\u00A0$2');
+    if (out !== b) lastChanges.push('רווחים בין מספרים לאותיות תוקנו לרווח קבוע');
+  }
+  if (fixes.parens) {
+    const b = out;
+    out = out.replace(/\u202A|\u202B|\u202C|\u202D|\u202E/g, '');
+    if (out !== b) lastChanges.push('תווי bidi סביב סוגריים הוסרו');
+  }
+  if (fixes.rtlmark) {
+    const lines = out.split('\n').map(line => {
+      if (!line.trim()) return line;
+      if (/[א-ת]/.test(line) && !line.startsWith(RLM)) return RLM + line;
+      return line;
+    });
+    const newOut = lines.join('\n');
+    if (newOut !== out) { lastChanges.push('נוסף סימן RTL (RLM) בתחילת שורות עבריות'); out = newOut; }
+  }
+
+  document.getElementById('rtl-output').value = out;
+  document.getElementById('diff-box').classList.remove('show');
+  if (lastChanges.length) setStatus('rtl-status', 'תוקנו ' + lastChanges.length + ' סוגי בעיות ✓', true);
+  else setStatus('rtl-status', 'לא נמצאו בעיות לתיקון', false);
+}
+
+function showDiff() {
+  const box = document.getElementById('diff-box');
+  if (box.classList.contains('show')) { box.classList.remove('show'); return; }
+  if (!lastChanges.length && !document.getElementById('rtl-output').value) {
+    setStatus('rtl-status', 'הרץ תיקון תחילה', false); return;
+  }
+  box.innerHTML = lastChanges.length
+    ? lastChanges.map(c => '<div class="diff-item">' + c + '</div>').join('')
+    : '<div>לא בוצעו שינויים</div>';
+  box.classList.add('show');
+}
+
+function copyRTL() {
+  const val = document.getElementById('rtl-output').value;
+  if (!val) { setStatus('rtl-status', 'אין טקסט להעתקה', false); return; }
+  navigator.clipboard.writeText(val).then(() => setStatus('rtl-status', 'הועתק ללוח ✓', true));
+}
+
+function clearRTL() {
+  document.getElementById('rtl-input').value = '';
+  document.getElementById('rtl-output').value = '';
+  document.getElementById('diff-box').classList.remove('show');
+  setStatus('rtl-status', '', false);
+  lastChanges = [];
+}
+
+const engToHeb = {
+  q:'/',w:"'",e:'ק',r:'ר',t:'א',y:'ט',u:'ו',i:'ן',o:'ם',p:'פ',
+  a:'ש',s:'ד',d:'ג',f:'כ',g:'ע',h:'י',j:'ח',k:'ל',l:'ך',';':'ף',
+  z:'ז',x:'ס',c:'ב',v:'ה',b:'נ',n:'מ',m:'צ',',':'ת','.':'ץ','/':'.',
+  "'":'״','-':'-',' ':' '
+};
+
+function convertKeyboard() {
+  const input = document.getElementById('kb-input').value;
+  if (!input.trim()) { setStatus('kb-status', 'הדבק טקסט תחילה', false); return; }
+  let out = '';
+  for (let i = 0; i < input.length; i++) {
+    const c = input[i].toLowerCase();
+    out += engToHeb[c] !== undefined ? engToHeb[c] : input[i];
+  }
+  document.getElementById('kb-output').value = out;
+  setStatus('kb-status', 'הומר בהצלחה ✓', true);
+}
+
+function copyKB() {
+  const val = document.getElementById('kb-output').value;
+  if (!val) { setStatus('kb-status', 'אין טקסט להעתקה', false); return; }
+  navigator.clipboard.writeText(val).then(() => setStatus('kb-status', 'הועתק ללוח ✓', true));
+}
+
+function clearKB() {
+  document.getElementById('kb-input').value = '';
+  document.getElementById('kb-output').value = '';
+  setStatus('kb-status', '', false);
+}
+</script>
+</body>
+</html>
