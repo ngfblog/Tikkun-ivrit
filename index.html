@@ -211,6 +211,26 @@
     margin-bottom: 20px;
   }
   .info-box strong { color: var(--text); }
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--accent2);
+    color: #0f1a14;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 999;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
   @media (max-width: 600px) {
     header { padding: 16px 16px 0; }
     main { padding: 20px 16px; }
@@ -219,6 +239,7 @@
 </style>
 </head>
 <body>
+<div class="toast" id="toast"></div>
 <header>
   <div class="logo">תיקון <span>עברית</span></div>
   <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀ מצב בהיר</button>
@@ -240,6 +261,7 @@
     <span class="toggle on" data-key="numberspaces">רווחים ליד מספרים</span>
     <span class="toggle on" data-key="parens">סוגריים ( )</span>
     <span class="toggle on" data-key="cleaninvisible">ניקוי תווים נסתרים</span>
+    <span class="toggle on" data-key="mergenumbers">חיבור שורות מספר</span>
     <span class="toggle off" data-key="removebidi">הסר כל תווי bidi</span>
   </div>
 
@@ -291,7 +313,7 @@
 
 <script>
 const RLM = '\u200F';
-const fixes = { quotes: true, rtlmark: true, numberspaces: true, parens: true, cleaninvisible: true, removebidi: false };
+const fixes = { quotes: true, rtlmark: true, numberspaces: true, parens: true, cleaninvisible: true, mergenumbers: true, removebidi: false };
 let lastChanges = [];
 
 document.querySelectorAll('.toggle').forEach(el => {
@@ -317,8 +339,16 @@ function toggleTheme() {
   document.getElementById('themeBtn').textContent = isLight ? '☀ מצב בהיר' : '🌙 מצב כהה';
 }
 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
 function setStatus(id, msg, ok) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.textContent = msg;
   el.className = 'status-bar' + (ok ? ' ok' : '');
 }
@@ -347,7 +377,10 @@ function fixRTL() {
   }
   if (fixes.numberspaces) {
     const b = out;
-    out = out.replace(/([א-ת])(\d)/g, '$1\u00A0$2').replace(/(\d)([א-ת])/g, '$1\u00A0$2');
+    out = out
+      .replace(/([א-ת])(\d)/g, '$1\u00A0$2')
+      .replace(/(\d)([א-ת])/g, '$1\u00A0$2')
+      .replace(/(\d)(כוס|גרם|גביע|גביעי|כפית|כף|מ"ל|מ״ל|ק"ג|ק״ג|יח|יחי)/g, '$1\u00A0$2');
     if (out !== b) lastChanges.push('רווחים בין מספרים לאותיות תוקנו לרווח קבוע');
   }
   if (fixes.parens) {
@@ -355,16 +388,58 @@ function fixRTL() {
     out = out.replace(/\u202A|\u202B|\u202C|\u202D|\u202E/g, '');
     if (out !== b) lastChanges.push('תווי bidi סביב סוגריים הוסרו');
   }
+  if (fixes.mergenumbers) {
+    const b = out;
+    const lines = out.split('\n');
+    const merged = [];
+    let i = 0;
+    while (i < lines.length) {
+      const cur = lines[i].replace(/^[\u200F\u200E]+/, '').trim();
+      const next = i + 1 < lines.length ? lines[i+1].replace(/^[\u200F\u200E]+/, '').trim() : '';
+      const isOnlyNumber = /^\d+$/.test(cur);
+      const nextHasHebrew = /[א-ת]/.test(next);
+      if (isOnlyNumber && nextHasHebrew && next) {
+        merged.push(cur + ' ' + next);
+        i += 2;
+      } else {
+        merged.push(lines[i]);
+        i++;
+      }
+    }
+    const merged2 = [];
+    let j = 0;
+    const arr = merged;
+    while (j < arr.length) {
+      const cur = arr[j].replace(/^[\u200F\u200E]+/, '').trim();
+      const next = j + 1 < arr.length ? arr[j+1].replace(/^[\u200F\u200E]+/, '').trim() : '';
+      const nextWords = next.split(/\s+/).filter(w => w.length > 0);
+      const nextIsShortDesc = nextWords.length <= 3 && /[א-ת]/.test(next) && !/^\d/.test(next) && !/^[*\-•]/.test(next);
+      const curHasHebrew = /[א-ת]/.test(cur);
+      if (curHasHebrew && nextIsShortDesc && next) {
+        merged2.push(arr[j].replace(/^[\u200F\u200E]+/, '').trim() + '، ' + next);
+        j += 2;
+      } else {
+        merged2.push(arr[j]);
+        j++;
+      }
+    }
+    out = merged2.join('\n');
+    if (out !== b) lastChanges.push('שורות מספר ותיאורים קצרים חוברו');
+  }
   if (fixes.rtlmark) {
     const lines = out.split('\n');
+    const hasHebrewInDoc = lines.some(l => /[א-ת]/.test(l));
     const marked = lines.map((line, i) => {
       const stripped = line.replace(/^[\u200F\u200E]+/, '');
-      if (!stripped.trim()) return line;
-      const hasHebrew = /[א-ת]/.test(stripped);
-      const startsWithNumber = /^\d/.test(stripped.trim());
+      if (!stripped.trim()) return stripped;
+      const core = stripped.trim();
+      const hasHebrew = /[א-ת]/.test(core);
+      const isBullet = /^[*\-•]\s*/.test(core);
+      const coreNoPrefix = core.replace(/^[*\-•]\s*/, '');
+      const startsWithNumber = /^\d/.test(coreNoPrefix);
       const prevHasHebrew = i > 0 && /[א-ת]/.test(lines[i-1]);
       const nextHasHebrew = i < lines.length-1 && /[א-ת]/.test(lines[i+1]);
-      if (hasHebrew || (startsWithNumber && (prevHasHebrew || nextHasHebrew))) {
+      if (hasHebrew || isBullet || (startsWithNumber && (prevHasHebrew || nextHasHebrew)) || (hasHebrewInDoc && /^\d+$/.test(core))) {
         return RLM + stripped;
       }
       return stripped;
@@ -375,8 +450,13 @@ function fixRTL() {
 
   document.getElementById('rtl-output').value = out;
   document.getElementById('diff-box').classList.remove('show');
-  if (lastChanges.length) setStatus('rtl-status', 'תוקנו ' + lastChanges.length + ' סוגי בעיות ✓', true);
-  else setStatus('rtl-status', 'לא נמצאו בעיות לתיקון', false);
+  if (lastChanges.length) {
+    setStatus('rtl-status', 'תוקנו ' + lastChanges.length + ' סוגי בעיות ✓', true);
+    showToast('✓ תוקנו ' + lastChanges.length + ' סוגי בעיות');
+  } else {
+    setStatus('rtl-status', 'לא נמצאו בעיות לתיקון', false);
+    showToast('לא נמצאו בעיות לתיקון');
+  }
 }
 
 function showDiff() {
@@ -392,9 +472,10 @@ function showDiff() {
 }
 
 function copyRTL() {
-  const val = document.getElementById('rtl-output').value;
-  if (!val) { setStatus('rtl-status', 'אין טקסט להעתקה', false); return; }
-  navigator.clipboard.writeText(val).then(() => setStatus('rtl-status', 'הועתק ללוח ✓', true));
+  const el = document.getElementById('rtl-output');
+  if (!el.value) { showToast('אין טקסט להעתקה'); return; }
+  copyFromElement('rtl-output');
+  showToast('✓ הועתק ללוח');
 }
 
 function clearRTL() {
@@ -435,24 +516,32 @@ function convertText(input) {
 
 async function convertKeyboard() {
   const input = document.getElementById('kb-input').value;
-  if (!input.trim()) { setStatus('kb-status', 'הדבק טקסט תחילה', false); return; }
+  if (!input.trim()) { showToast('הדבק טקסט תחילה'); return; }
   const out = convertText(input);
   document.getElementById('kb-output').value = out;
-  try {
-    await navigator.clipboard.writeText(out);
-    setStatus('kb-status', 'הומר והועתק ללוח ✓', true);
-  } catch {
-    setStatus('kb-status', 'הומר בהצלחה ✓', true);
-  }
-  setTimeout(() => setStatus('kb-status', 'ממתין להדבקה...', false), 3000);
+  copyFromElement('kb-output');
+  showToast('✓ הומר והועתק ללוח');
 }
 
-async function copyKB() {
-  const val = document.getElementById('kb-output').value;
-  if (!val) { setStatus('kb-status', 'אין טקסט להעתקה', false); return; }
-  await navigator.clipboard.writeText(val);
-  setStatus('kb-status', 'הועתק ללוח ✓', true);
-  setTimeout(() => setStatus('kb-status', '', false), 2000);
+function copyKB() {
+  const el = document.getElementById('kb-output');
+  if (!el.value) { showToast('אין טקסט להעתקה'); return; }
+  copyFromElement('kb-output');
+  showToast('✓ הועתק ללוח');
+}
+
+function copyFromElement(id) {
+  const el = document.getElementById(id);
+  const tmp = document.createElement('textarea');
+  tmp.value = el.value;
+  tmp.style.position = 'fixed';
+  tmp.style.opacity = '0';
+  tmp.setAttribute('dir', 'rtl');
+  document.body.appendChild(tmp);
+  tmp.focus();
+  tmp.select();
+  try { document.execCommand('copy'); } catch { navigator.clipboard.writeText(el.value); }
+  document.body.removeChild(tmp);
 }
 
 function clearKB() {
@@ -461,9 +550,17 @@ function clearKB() {
   setStatus('kb-status', '', false);
 }
 
-// המרה אוטומטית בהדבקה
+// המרה אוטומטית בהדבקה - תיקון מקלדת
 document.getElementById('kb-input').addEventListener('paste', () => {
   setTimeout(convertKeyboard, 0);
+});
+
+// תיקון אוטומטי בהדבקה - תיקון RTL
+document.getElementById('rtl-input').addEventListener('paste', () => {
+  setTimeout(() => {
+    fixRTL();
+    copyFromElement('rtl-output');
+  }, 100);
 });
 </script>
 </body>
