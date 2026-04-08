@@ -358,16 +358,16 @@ function fixRTL() {
   if (fixes.rtlmark) {
     const lines = out.split('\n');
     const marked = lines.map((line, i) => {
-      if (!line.trim()) return line;
-      if (line.startsWith(RLM)) return line;
-      const hasHebrew = /[א-ת]/.test(line);
-      const startsWithNumber = /^\d/.test(line.trim());
+      const stripped = line.replace(/^[\u200F\u200E]+/, '');
+      if (!stripped.trim()) return line;
+      const hasHebrew = /[א-ת]/.test(stripped);
+      const startsWithNumber = /^\d/.test(stripped.trim());
       const prevHasHebrew = i > 0 && /[א-ת]/.test(lines[i-1]);
       const nextHasHebrew = i < lines.length-1 && /[א-ת]/.test(lines[i+1]);
       if (hasHebrew || (startsWithNumber && (prevHasHebrew || nextHasHebrew))) {
-        return RLM + line;
+        return RLM + stripped;
       }
-      return line;
+      return stripped;
     });
     const newOut = marked.join('\n');
     if (newOut !== out) { lastChanges.push('נוסף סימן RTL (RLM) בתחילת שורות עבריות ומספרים'); out = newOut; }
@@ -444,6 +444,7 @@ async function convertKeyboard() {
   } catch {
     setStatus('kb-status', 'הומר בהצלחה ✓', true);
   }
+  setTimeout(() => setStatus('kb-status', 'ממתין להדבקה...', false), 3000);
 }
 
 async function copyKB() {
@@ -451,6 +452,7 @@ async function copyKB() {
   if (!val) { setStatus('kb-status', 'אין טקסט להעתקה', false); return; }
   await navigator.clipboard.writeText(val);
   setStatus('kb-status', 'הועתק ללוח ✓', true);
+  setTimeout(() => setStatus('kb-status', '', false), 2000);
 }
 
 function clearKB() {
