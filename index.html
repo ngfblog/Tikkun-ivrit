@@ -211,6 +211,35 @@
     margin-bottom: 20px;
   }
   .info-box strong { color: var(--text); }
+  /* Toast popup */
+  .toast-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .toast-overlay.show { opacity: 1; }
+  .toast {
+    background: var(--accent2);
+    color: #0a1f14;
+    font-family: 'Heebo', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 22px 52px;
+    border-radius: 20px;
+    box-shadow: 0 12px 60px rgba(0,0,0,0.5);
+    transform: scale(0.85);
+    transition: transform 0.18s ease;
+    letter-spacing: 0.2px;
+  }
+  .toast-overlay.show .toast {
+    transform: scale(1);
+  }
   @media (max-width: 600px) {
     header { padding: 16px 16px 0; }
     main { padding: 20px 16px; }
@@ -219,6 +248,7 @@
 </style>
 </head>
 <body>
+<div class="toast-overlay" id="toast-overlay"><div class="toast" id="toast">✓ הועתק ללוח</div></div>
 <header>
   <div class="logo">תיקון <span>עברית</span></div>
   <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀ מצב בהיר</button>
@@ -383,10 +413,23 @@ function showDiff() {
   box.classList.add('show');
 }
 
+let toastTimer;
+function showToast(msg) {
+  const overlay = document.getElementById('toast-overlay');
+  const t = document.getElementById('toast');
+  t.textContent = msg || '✓ הועתק ללוח';
+  overlay.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => overlay.classList.remove('show'), 1800);
+}
+
 function copyRTL() {
   const val = document.getElementById('rtl-output').value;
   if (!val) { setStatus('rtl-status', 'אין טקסט להעתקה', false); return; }
-  navigator.clipboard.writeText(val).then(() => setStatus('rtl-status', 'הועתק ללוח ✓', true));
+  navigator.clipboard.writeText(val).then(() => {
+    showToast('✓ הועתק ללוח');
+    setStatus('rtl-status', '', false);
+  });
 }
 
 function clearRTL() {
@@ -432,7 +475,8 @@ async function convertKeyboard() {
   document.getElementById('kb-output').value = out;
   try {
     await navigator.clipboard.writeText(out);
-    setStatus('kb-status', 'הומר והועתק ללוח ✓', true);
+    showToast('✓ הומר והועתק');
+    setStatus('kb-status', '', false);
   } catch {
     setStatus('kb-status', 'הומר בהצלחה ✓', true);
   }
@@ -442,7 +486,8 @@ async function copyKB() {
   const val = document.getElementById('kb-output').value;
   if (!val) { setStatus('kb-status', 'אין טקסט להעתקה', false); return; }
   await navigator.clipboard.writeText(val);
-  setStatus('kb-status', 'הועתק ללוח ✓', true);
+  showToast('✓ הועתק ללוח');
+  setStatus('kb-status', '', false);
 }
 
 function clearKB() {
