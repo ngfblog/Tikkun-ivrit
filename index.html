@@ -44,9 +44,10 @@
     padding: 24px 32px 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     border-bottom: 1px solid var(--border);
     padding-bottom: 0;
+    position: relative;
   }
   .logo {
     font-size: 20px;
@@ -66,6 +67,8 @@
     cursor: pointer;
     transition: all 0.2s;
     margin-bottom: 16px;
+    position: absolute;
+    left: 32px;
   }
   .theme-btn:hover { color: var(--text); border-color: var(--accent); }
   nav {
@@ -220,14 +223,14 @@
   <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀ מצב בהיר</button>
 </header>
 <nav>
-  <button class="tab active" onclick="switchTab('rtl', this)">תיקון RTL ל-Word</button>
-  <button class="tab" onclick="switchTab('keyboard', this)">תיקון מקלדת אנגלית←עברית</button>
+  <button class="tab" onclick="switchTab('rtl', this)">תיקון RTL ל-Word</button>
+  <button class="tab active" onclick="switchTab('keyboard', this)">תיקון מקלדת אנגלית←עברית</button>
 </nav>
 
 <main>
 
 <!-- TAB 1: RTL Fixer -->
-<div class="panel active" id="panel-rtl">
+<div class="panel" id="panel-rtl">
   <p class="panel-title">מדביקים טקסט מ-ChatGPT או מהאינטרנט — הכלי מתקן כיווניות RTL, מרכאות, סוגריים ורווחים לפני הדבקה ב-Word</p>
 
   <div class="toggles" id="toggles">
@@ -260,7 +263,7 @@
 </div>
 
 <!-- TAB 2: Keyboard Fixer -->
-<div class="panel" id="panel-keyboard">
+<div class="panel active" id="panel-keyboard">
   <div class="info-box">
     <strong>מה זה עושה?</strong> אם הקלדת בטעות <strong>akuo</strong> כשהתכוונת <strong>שלום</strong> (פריסת מקלדת אנגלית במקום עברית) — הכלי הזה מתרגם אוטומטית.<br/>
     מבוסס על <strong>Gutte</strong> מאת ngfblog.
