@@ -75,6 +75,7 @@
     display: flex;
     gap: 0;
     margin-top: 16px;
+    justify-content: center;
   }
   .tab {
     padding: 10px 24px;
@@ -396,29 +397,52 @@ function clearRTL() {
   lastChanges = [];
 }
 
-const engToHeb = {
-  q:'/',w:"'",e:'ק',r:'ר',t:'א',y:'ט',u:'ו',i:'ן',o:'ם',p:'פ',
-  a:'ש',s:'ד',d:'ג',f:'כ',g:'ע',h:'י',j:'ח',k:'ל',l:'ך',';':'ף',
-  z:'ז',x:'ס',c:'ב',v:'ה',b:'נ',n:'מ',m:'צ',',':'ת','.':'ץ','/':'.',
-  "'":'״','-':'-',' ':' '
+const NORMAL = {
+  '`':';', '-':'-', '=':'=',
+  'q':'/', 'w':"'", 'e':'ק', 'r':'ר', 't':'א', 'y':'ט', 'u':'ו', 'i':'ן', 'o':'ם', 'p':'פ',
+  '[':']', ']':'[', '\\':'\\',
+  'a':'ש', 's':'ד', 'd':'ג', 'f':'כ', 'g':'ע', 'h':'י', 'j':'ח', 'k':'ל', 'l':'ך',
+  ';':'ף', "'":",",
+  'z':'ז', 'x':'ס', 'c':'ב', 'v':'ה', 'b':'נ', 'n':'מ', 'm':'צ', ',':'ת', '.':'ץ', '/':'.'
 };
+const SHIFTED = {
+  '~':'~','!':'!','@':'@','#':'#','$':'$','%':'%','^':'^','&':'&','*':'*',
+  '(':')',')'  :'(','_':'_','+':'+',
+  'Q':'/','W':"'",'E':'ק','R':'ר','T':'א','Y':'ט','U':'ו','I':'ן','O':'ם','P':'פ',
+  '{':'}','}':'{','|':'|',
+  'A':'ש','S':'ד','D':'ג','F':'כ','G':'ע','H':'י','J':'ח','K':'ל','L':'ך',
+  ':':'ף','"':',',
+  'Z':'ז','X':'ס','C':'ב','V':'ה','B':'נ','N':'מ','M':'צ','<':'ת','>':'ץ','?':'.'
+};
+const ENG_TO_HEB = { ...NORMAL, ...SHIFTED };
+const PASSTHROUGH = new Set([' ', '\n', '\r', '\t']);
 
-function convertKeyboard() {
-  const input = document.getElementById('kb-input').value;
-  if (!input.trim()) { setStatus('kb-status', 'הדבק טקסט תחילה', false); return; }
-  let out = '';
-  for (let i = 0; i < input.length; i++) {
-    const c = input[i].toLowerCase();
-    out += engToHeb[c] !== undefined ? engToHeb[c] : input[i];
-  }
-  document.getElementById('kb-output').value = out;
-  setStatus('kb-status', 'הומר בהצלחה ✓', true);
+function convertText(input) {
+  return Array.from(input).map(char => {
+    if (PASSTHROUGH.has(char)) return char;
+    if (Object.prototype.hasOwnProperty.call(ENG_TO_HEB, char)) return ENG_TO_HEB[char];
+    return char;
+  }).join('');
 }
 
-function copyKB() {
+async function convertKeyboard() {
+  const input = document.getElementById('kb-input').value;
+  if (!input.trim()) { setStatus('kb-status', 'הדבק טקסט תחילה', false); return; }
+  const out = convertText(input);
+  document.getElementById('kb-output').value = out;
+  try {
+    await navigator.clipboard.writeText(out);
+    setStatus('kb-status', 'הומר והועתק ללוח ✓', true);
+  } catch {
+    setStatus('kb-status', 'הומר בהצלחה ✓', true);
+  }
+}
+
+async function copyKB() {
   const val = document.getElementById('kb-output').value;
   if (!val) { setStatus('kb-status', 'אין טקסט להעתקה', false); return; }
-  navigator.clipboard.writeText(val).then(() => setStatus('kb-status', 'הועתק ללוח ✓', true));
+  await navigator.clipboard.writeText(val);
+  setStatus('kb-status', 'הועתק ללוח ✓', true);
 }
 
 function clearKB() {
@@ -426,6 +450,11 @@ function clearKB() {
   document.getElementById('kb-output').value = '';
   setStatus('kb-status', '', false);
 }
+
+// המרה אוטומטית בהדבקה
+document.getElementById('kb-input').addEventListener('paste', () => {
+  setTimeout(convertKeyboard, 0);
+});
 </script>
 </body>
 </html>
