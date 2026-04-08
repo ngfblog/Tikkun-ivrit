@@ -32,7 +32,7 @@
 
 פתח את `index.html` בכל דפדפן — לא נדרש אינטרנט, לא נדרשת התקנה.
 
-🔗 **[פתח את הכלי](https://ngfblog.github.io/tikkun-ivrit)**
+🔗 **[פתח את הכלי](https://ngfblog.github.io/Tikkun-ivrit/)**
 
 ## רישיון
 
