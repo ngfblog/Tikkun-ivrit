@@ -1,5 +1,9 @@
 # תיקון עברית 🔧
 
+<div align="center">
+<img src="https://github.com/ngfblog/Tikkun-ivrit/blob/main/tikkun-ivrit.png?raw=true" height="120" width="120"/>
+</div>
+
 כלי עזר להעתקה נכונה של טקסט עברי מאתרים ומ-ChatGPT להדבקה ב-Word.
 
 ## הבעיה
