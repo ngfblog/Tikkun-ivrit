@@ -509,6 +509,7 @@ const PASSTHROUGH = new Set([' ', '\n', '\r', '\t']);
 function convertText(input) {
   return Array.from(input).map(char => {
     if (PASSTHROUGH.has(char)) return char;
+    if (char === '?') return '?';
     if (Object.prototype.hasOwnProperty.call(ENG_TO_HEB, char)) return ENG_TO_HEB[char];
     return char;
   }).join('');
